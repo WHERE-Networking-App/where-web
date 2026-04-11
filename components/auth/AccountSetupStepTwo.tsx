@@ -4,13 +4,7 @@ import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription }
 import { Badge } from "@/components/ui/badge"
 import { AccountSetupStepTwoInput, AccountSetupStepTwoSchema } from "@/lib/validations/auth";
 import { useState } from "react";
-
-const INTERESTS_OPTIONS = [
-    "Coffee", "Street Food", "Beer", "Night Markets",
-    "Anime", "K-drama", "Drama", "Games",
-    "Indie", "Hip-hop", "Rock", "K-pop",
-    "Photography", "Drawing", "Content-creation", "Tech",]
-
+import { INTERESTS_OPTIONS } from "@/data/mockup_data";
 
 type FieldErrors = Partial<Record<"interests", string[]>>
 

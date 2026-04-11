@@ -11,6 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-purple-800 text-white hover:bg-purple-900 rounded-xl",
+        danger: "bg-red-800 text-white hover:bg-red-900 rounded-xl",
         outline:
           "border-border bg-background shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 rounded-xl",
         secondary:

@@ -17,7 +17,7 @@ export const SignUp: React.FC = () => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setFieldErrors({});
         setServerError(null);
