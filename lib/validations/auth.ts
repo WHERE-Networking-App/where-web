@@ -58,7 +58,7 @@ export const AccountSetupStepTwoSchema = z.object({
 
 export const AccountSetupSchema = AccountSteupStepOneSchema
                                     .omit({ userId: true })
-                                    .merge(AccountSetupStepTwoSchema);
+                                    .extend(AccountSetupStepTwoSchema.shape);
 
 export type AccountSetupStepOneInput = z.infer<typeof AccountSteupStepOneSchema>
 export type AccountSetupStepTwoInput = z.infer<typeof AccountSetupStepTwoSchema>
