@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { AccountSetupStepOneInput, AccountSteupStepOneSchema } from "@/lib/validations/auth";
 import { useState } from "react";
 
-type FieldErros = Partial<Record<"username" | "inAppName" | "profession", string[]>>
+type FieldErrors = Partial<Record<"username" | "inAppName" | "profession", string[]>>
 
 type StepOneProps = {
    userId: string;
@@ -16,7 +16,7 @@ type StepOneProps = {
 }
 
 export const AccountSetupStepOne: React.FC<StepOneProps> = ({ userId, defaultValues, onComplete }) => {
-    const [fieldErrors, setFieldErrors] = useState<FieldErros>({});
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();

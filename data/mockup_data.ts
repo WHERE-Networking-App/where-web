@@ -32,4 +32,9 @@ export const mockEvents = [
         participants: 5,
         participant_aliases: [{'name': 'Blue Falcon', 'status': 'I\m going'}, {'name': 'Green Panther', 'status': 'I \m not going'}, {'name': 'White Eagle', 'status': 'I\'m not going'}, {'name': 'Black Bear', 'status': 'I\'m going'}, {'name': 'Red Fox', 'status': 'I\'m going'}]
     }
-  ];
+];
+
+export const timeSlots = ['Morning', 'Noon', 'Evening', 'Night'];
+export const vibes = [{label: 'Coffee', value: 'coffee'}, {label: 'Beer', value: 'beer'}, {label: 'Coworking', value: 'coworking'}];
+export const cities = [{'label': 'Yangon', 'value': 'yangon'}, {'label': 'Mandalay', 'value': 'mandalay'}, {'label': 'Naypyidaw', 'value': 'naypyidaw'}, {'label': 'Mawlamyine', 'value': 'mawlamyine'}, {'label': 'Bago', 'value': 'bago'}];
+export const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

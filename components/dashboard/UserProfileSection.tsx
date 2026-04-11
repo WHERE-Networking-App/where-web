@@ -20,7 +20,7 @@ export const UserProfileSection: React.FC = () => {
                 <Button variant={"default"} 
                         className={'p-6 text-md'}
                         nativeButton={false}
-                        render={<Link href="/login" />}>
+                        render={<Link href="/create-meetup" />}>
                      + New Meetup          
                 </Button>
             </div>

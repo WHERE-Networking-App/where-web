@@ -4,6 +4,7 @@ import type { AccountSetupStepOneInput, AccountSetupStepTwoInput } from '@/lib/v
 import { useRouter } from "next/navigation";
 import { AccountSetupStepOne } from "./AccountSetupStepOne";
 import { AccountSetupStepTwo } from "./AccountSetupStepTwo";
+import { StepIndicator } from "../common/StepIndicator";
 
 interface AccountSetupFlowProps {
     userId: string;
@@ -70,31 +71,3 @@ export const AccountSetupFlow: React.FC<AccountSetupFlowProps> = ({ userId }) =>
     )
 }
 
-function StepIndicator({current, total}: { current: number, total: number }) {
-    return (
-        <div className="flex items-center justify-center gap-3">
-            {Array.from({ length: total }, (_, i) => i + 1).map((step) => (
-                <div key={step} className="flex items-center gap-3">
-                <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                    step < current
-                        ? "bg-purple-600 text-white"           // completed
-                        : step === current
-                        ? "bg-purple-600 text-white ring-4 ring-purple-200" // active
-                        : "bg-gray-200 text-gray-500"           // upcoming
-                    }`}
-                >
-                    {step < current ? "✓" : step}
-                </div>
-                {step < total && (
-                    <div
-                    className={`w-12 h-0.5 transition-colors ${
-                        step < current ? "bg-purple-600" : "bg-gray-200"
-                    }`}
-                    />
-                )}
-                </div>
-            ))}
-        </div>
-    )
-}
