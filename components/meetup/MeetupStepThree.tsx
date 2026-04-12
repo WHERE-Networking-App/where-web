@@ -43,13 +43,13 @@ export const MeetupStepThree: React.FC<StepThreeProps> = ({ defaultValues, loadi
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="vibe">Vibe</Label>
-                            <Select items={vibes} value={vibe} onValueChange={setVibe}>
+                            <Select items={vibes} value={vibe} onValueChange={(val) => { if (val !== null) setVibe(val); }}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select a vibe"  />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                    <SelectLabel>Fruits</SelectLabel>
+                                    <SelectLabel>Vibes</SelectLabel>
                                     {vibes.map((item) => (
                                         <SelectItem key={item.value} value={item.value}>
                                         {item.label}
