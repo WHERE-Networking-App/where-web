@@ -1,21 +1,29 @@
 import { MeetupDetail } from "@/components/dashboard/MeetupDetail";
-import { mockEvents } from "@/data/mockup_data";
+import { apiServer } from "@/lib/api-server";
+import type { Meetup } from "@/lib/types";
 
 interface MeetupDetailPageProps {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
-export default async function MeetupDetailPage({params}: MeetupDetailPageProps) {
-    const {id} = await params;
 
-    const meetup = mockEvents.find(event => event.id === id);
+export default async function MeetupDetailPage({ params }: MeetupDetailPageProps) {
+  const { id } = await params;
 
-    if (!meetup) {
-        return <div className="text-center mt-20 text-2xl">Meetup not found</div>;
-    }
+  const { data: meetup, error } = await apiServer<Meetup>(
+    `/api/meetups/${id}`,
+  );
 
+  if (error || !meetup) {
     return (
-        <div className="max-w-4xl mx-auto min-h-screen p-6">
-            <MeetupDetail meetup={meetup} />
-        </div>
-    )
+      <div className="text-center mt-20 text-2xl">
+        {error ?? "Meetup not found"}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto min-h-screen p-6">
+      <MeetupDetail meetup={meetup} />
+    </div>
+  );
 }

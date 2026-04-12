@@ -35,6 +35,6 @@ export const mockEvents = [
 ];
 
 export const timeSlots = ['Morning', 'Noon', 'Evening', 'Night'];
-export const vibes = [{label: 'Coffee', value: 'coffee'}, {label: 'Beer', value: 'beer'}, {label: 'Coworking', value: 'coworking'}];
+export const vibes = [{label: 'Coffee', value: 'Coffee'}, {label: 'Beer', value: 'Beer'}, {label: 'Coworking', value: 'Coworking'}];
 export const cities = [{'label': 'Yangon', 'value': 'yangon'}, {'label': 'Mandalay', 'value': 'mandalay'}, {'label': 'Naypyidaw', 'value': 'naypyidaw'}, {'label': 'Mawlamyine', 'value': 'mawlamyine'}, {'label': 'Bago', 'value': 'bago'}];
 export const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
