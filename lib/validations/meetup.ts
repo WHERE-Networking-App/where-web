@@ -16,7 +16,7 @@ export const CreateMeetupStepOneSchema = z.object({
   title: z.string().min(1, "Title is required"),
   date: z.string().min(1, "Date is required"),
   timeSlot: z.enum(TIME_SLOTS, {
-    errorMap: () => ({ message: "Please select a time slot" }),
+    error: "Please select a time slot",
   }),
   city: z.string().min(1, "City is required"),
   location: z.string().optional(),
