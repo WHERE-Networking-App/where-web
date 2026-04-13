@@ -9,6 +9,8 @@ RUN bun install --frozen-lockfile
 # Build the app
 FROM base AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_EXTERNAL_API_URL
+ENV NEXT_PUBLIC_EXTERNAL_API_URL=$NEXT_PUBLIC_EXTERNAL_API_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN bun next build
