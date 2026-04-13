@@ -1,37 +1,29 @@
 import { NextResponse } from "next/server";
-import type {NextRequest  } from "next/server";
+import {NextRequest  } from "next/server";
+import { apiServer } from "./lib/api-server";
 
 export async function middleware(request: NextRequest) {
     const token = request.cookies.get("auth_token")?.value;
     const pathname = request.nextUrl.pathname;
 
-    const isProtectedRouts = pathname.startsWith('/dashboard') || pathname.startsWith('/create-meetup') || pathname.startsWith('/account-setup');
+    const isProtectedRoute = ["/dashboard", "/create-meetup", "/account-setup"].some(route => 
+        pathname.startsWith(route)
+    );
 
-    if (isProtectedRouts) {
+    if (isProtectedRoute) {
         if(!token) {
             return NextResponse.redirect(new URL("/login", request.url));
         }
         
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_EXTERNAL_API_URL}/auth/verify`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
+        const error = await apiServer('/api/auth/verify', {token});
 
-            if (!response.ok) {
-                const response = NextResponse.redirect(new URL('/login', request.url));
-                response.cookies.delete('auth_token');
-                return response;
-            }
-
-            return NextResponse.next();
-        } catch(error) {
-            const response = NextResponse.redirect(new URL('/login', request.url));
-            response.cookies.delete('auth_token');
+        if(error) {
+            const response = NextResponse.redirect(new URL("/login", request.url));
+            response.cookies.delete("auth_token");
             return response;
         }
+
+        return NextResponse.next();
     }
 
     if (pathname === "/login" || pathname === "/signup") {

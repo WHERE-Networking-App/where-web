@@ -18,41 +18,43 @@ export async function apiServer<T>(
   options: {
     method?: string;
     body?: unknown;
+    token?: string;
   } = {},
 ): Promise<ApiResponse<T>> {
-  const { method = "GET", body } = options;
+  const { method = "GET", body, token: optionalToken } = options;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  let token = optionalToken;
+
+  if(!token) {
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get("auth_token")?.value;
+    } catch (err) {
+      console.error("Error occurred while fetching cookies:", err);
+    }
+  }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   try {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
-      cache: "no-store",
     });
 
     const data = await res.json().catch(() => null);
-
     if (!res.ok) {
-      return {
-        data: null,
-        error:
-          data?.error || data?.message || `Request failed (${res.status})`,
+      return { 
+        data: null, 
+        error: data?.message || "Request failed" 
       };
     }
-
     return { data: data as T, error: null };
-  } catch (_err) {
-    return { data: null, error: "Network error. Please try again." };
+  } catch(err) {
+    return { data: null, error: "Network error" };
   }
 }
