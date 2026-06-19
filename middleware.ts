@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
-import {NextRequest  } from "next/server";
+import { NextRequest } from "next/server";
 import { apiServer } from "./lib/api-server";
+
+/** Shape returned by GET /api/auth/verify-token */
+interface VerifyTokenResponse {
+  valid: boolean;
+  userId: number;
+  email: string;
+  setupCompleted: boolean;
+  emailVerified: boolean;
+}
 
 export async function middleware(request: NextRequest) {
     const token = request.cookies.get("auth_token")?.value;
@@ -15,11 +24,12 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL("/login", request.url));
         }
         
-        const error = await apiServer('/api/auth/verify', {token});
+        const { data, error } = await apiServer<VerifyTokenResponse>('/api/auth/verify-token', { token });
 
-        if(error) {
+        if(error || !data?.valid) {
             const response = NextResponse.redirect(new URL("/login", request.url));
-            response.cookies.delete("auth_token");
+            // response.cookies.delete("auth_token");
+            response.cookies.set("auth_token", "", { maxAge: 0 }); 
             return response;
         }
 
@@ -33,4 +43,14 @@ export async function middleware(request: NextRequest) {
     }
 
     return NextResponse.next();
+}
+
+export const config = {
+    matcher: ["/dashboard/:path*", 
+        "/create-meetup/:path*", 
+        "/account-setup/:path*", 
+        "/login", 
+        "/signup",
+        `/((?!api|_next/static|favicon.ico).*)`
+    ],
 }

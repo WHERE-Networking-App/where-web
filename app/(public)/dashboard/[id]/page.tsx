@@ -1,6 +1,10 @@
 import { MeetupDetail } from "@/components/dashboard/MeetupDetail";
+import { getMeetupById } from "@/lib/api/meetups.server";
 import { apiServer } from "@/lib/api-server";
-import type { Meetup } from "@/lib/types";
+import type { UserProfileApiResponse } from "@/lib/types";
+
+// This page reads the auth cookie at request time — must be dynamic
+export const dynamic = "force-dynamic";
 
 interface MeetupDetailPageProps {
   params: Promise<{ id: string }>;
@@ -9,9 +13,13 @@ interface MeetupDetailPageProps {
 export default async function MeetupDetailPage({ params }: MeetupDetailPageProps) {
   const { id } = await params;
 
-  const { data: meetup, error } = await apiServer<Meetup>(
-    `/api/meetups/${id}`,
-  );
+  // Fetch meetup details and current user profile in parallel
+  const [meetupRes, profileRes] = await Promise.all([
+    getMeetupById(id),
+    apiServer<UserProfileApiResponse>("/api/users/profile"),
+  ]);
+
+  const { data: meetup, error } = meetupRes;
 
   if (error || !meetup) {
     return (
@@ -23,7 +31,10 @@ export default async function MeetupDetailPage({ params }: MeetupDetailPageProps
 
   return (
     <div className="max-w-4xl mx-auto min-h-screen p-6">
-      <MeetupDetail meetup={meetup} />
+      <MeetupDetail
+        meetup={meetup}
+        currentUserId={profileRes.data?.user.id}
+      />
     </div>
   );
 }

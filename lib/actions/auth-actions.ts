@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { redirect } from 'next/navigation';
 
 /**
  * Store the JWT token in a cookie.
@@ -10,7 +11,7 @@ export async function setAuthToken(token: string) {
   const cookieStore = await cookies();
   cookieStore.set("auth_token", token, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days

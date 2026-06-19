@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { PlacePicker } from "./PlacePicker";
 
 type FieldErrors = Partial<
   Record<"title" | "date" | "timeSlot" | "city" | "location", string[]>
@@ -47,6 +48,10 @@ export const MeetupStepOne: React.FC<StepOneProps> = ({
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>(
     defaultValues?.timeSlot ?? "",
   );
+  const [city, setCity] = useState<string>(defaultValues?.city ?? "");
+  const [location, setLocation] = useState<string>(
+    defaultValues?.location ?? "",
+  );
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -59,7 +64,7 @@ export const MeetupStepOne: React.FC<StepOneProps> = ({
       date: selectedDate as string,
       timeSlot: selectedTimeSlot as string,
       city: form.get("city") as string,
-      location: (form.get("location") as string) || undefined,
+      location: location || undefined,
     };
 
     const parsed = CreateMeetupStepOneSchema.safeParse(raw);
@@ -116,7 +121,9 @@ export const MeetupStepOne: React.FC<StepOneProps> = ({
               </Label>
               <Select
                 value={selectedTimeSlot}
-                onValueChange={(val) => { if (val !== null) setSelectedTimeSlot(val); }}
+                onValueChange={(val) => {
+                  if (val !== null) setSelectedTimeSlot(val);
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a time slot" />
@@ -148,7 +155,8 @@ export const MeetupStepOne: React.FC<StepOneProps> = ({
                 id="city"
                 name="city"
                 placeholder="e.g. New York"
-                defaultValue={defaultValues?.city}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
                 required
               />
               {fieldErrors.city && (
@@ -156,18 +164,30 @@ export const MeetupStepOne: React.FC<StepOneProps> = ({
               )}
             </div>
 
-            {/* Location (optional) */}
+            {/* Location — PlacePicker + manual fallback */}
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="location">
                 <LocateIcon className="inline h-4 w-4 mr-1" /> Location{" "}
                 <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
-              <Input
-                id="location"
-                name="location"
-                placeholder="e.g. Central Park Cafe"
-                defaultValue={defaultValues?.location}
+
+              {/* Place picker: searches known venues filtered by city */}
+              <PlacePicker
+                city={city}
+                value={location}
+                onSelect={(name) => setLocation(name)}
               />
+
+              {/* Manual override: shown when picker has no selection */}
+              {!location && (
+                <Input
+                  id="location"
+                  name="location"
+                  placeholder="Or type a location manually…"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              )}
               {fieldErrors.location && (
                 <p className="text-red-500 text-sm">
                   {fieldErrors.location[0]}

@@ -2,6 +2,8 @@ import Header from "@/components/common/header";
 import Footer from "@/components/common/footer";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
+import { apiServer } from "@/lib/api-server";
+import type { UserProfileApiResponse } from "@/lib/types";
 import { JSX } from "react";
 
 export const metadata = {
@@ -16,10 +18,17 @@ export const metadata = {
     }
 }
 
-export default function LandingPage(): JSX.Element {
+// Reads auth cookie at request time to personalise the header — must be dynamic
+export const dynamic = "force-dynamic";
+
+export default async function LandingPage(): Promise<JSX.Element> {
+    // Attempt to fetch the profile; silently fallback to null if not logged in
+    const { data } = await apiServer<UserProfileApiResponse>('/api/users/profile');
+    const profile = data?.user ?? null;
+
     return (
         <>
-            <Header />
+            <Header profile={profile} />
             <HeroSection />
             <FeaturesSection />
             <Footer />

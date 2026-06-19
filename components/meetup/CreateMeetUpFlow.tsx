@@ -11,7 +11,7 @@ import { StepIndicator } from "../common/StepIndicator";
 import { MeetupStepOne } from "./MeetupStepOne";
 import { MeetupStepTwo } from "./MeetupStepTwo";
 import { MeetupStepThree } from "./MeetupStepThree";
-import { apiClient } from "@/lib/api-client";
+import { createMeetup } from "@/lib/api/meetups";
 import type { CreateMeetupRequest } from "@/lib/types";
 
 type FlowData = {
@@ -43,22 +43,17 @@ export const CreateMeetupFlow: React.FC = () => {
     setServerError(null);
     setLoading(true);
 
-    // Combine all steps and map to API contract
     const body: CreateMeetupRequest = {
       title: data.stepOne!.title,
       date: data.stepOne!.date,
-      timeSlot: data.stepOne!.timeSlot as CreateMeetupRequest["timeSlot"],
+      timeSlot: data.stepOne!.timeSlot,
       city: data.stepOne!.city,
       location: data.stepOne!.location,
       participantsLimit: data.stepTwo!.participantsLimit,
-      vibe: stepThreeData.vibe as CreateMeetupRequest["vibe"],
+      vibe: stepThreeData.vibe,
     };
 
-    const { error } = await apiClient("/api/meetups/create", {
-      method: "POST",
-      body,
-      authenticated: true,
-    });
+    const { error } = await createMeetup(body);
 
     if (error) {
       setServerError(error);

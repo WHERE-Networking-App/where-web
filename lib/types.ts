@@ -9,6 +9,7 @@ export interface SignUpResponse {
   token: string;
   userId: number;
   setupCompleted: boolean;
+  emailVerified: boolean;
 }
 
 export interface LoginRequest {
@@ -21,6 +22,7 @@ export interface LoginResponse {
   token: string;
   userId: number;
   setupCompleted: boolean;
+  emailVerified: boolean;
 }
 
 // ─── User / Profile ─────────────────────────────────────────────────
@@ -31,8 +33,11 @@ export interface SetupStep1Request {
 }
 
 export interface InterestItem {
+  id?: number;
+  user_id?: number;
   category: string;
   interest: string;
+  created_at?: string;
 }
 
 export interface SetupStep2Request {
@@ -46,7 +51,12 @@ export interface UserProfile {
   inAppName: string;
   profession: string;
   setupCompleted: boolean;
-  interests?: InterestItem[];
+}
+
+/** Shape returned by GET /api/users/profile */
+export interface UserProfileApiResponse {
+  user: UserProfile;
+  interests: InterestItem[];
 }
 
 // ─── Meetup ──────────────────────────────────────────────────────────
@@ -93,6 +103,70 @@ export interface Meetup {
   participants: MeetupParticipant[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface UpComingMeetup {
+  id: number;
+  city: string;
+  createdAt: string;
+  date: string;
+  description: string | null;
+  hostId: number;
+  isFull: boolean;
+  isParticipant: boolean;
+  location: string;
+  participantCount: number;
+  participantsLimit: number;
+  status: string;
+  timeSlot: string;
+  title: string;
+  updatedAt: string;
+  vibe: string;
+}
+
+/** Body for POST /api/meetups/{id}/reach */
+export interface MeetupReachRequest {
+  note?: string;
+}
+
+/** Response for POST /api/meetups/{id}/cancel and reach */
+export interface MeetupActionResponse {
+  message: string;
+}
+
+// ─── Places ──────────────────────────────────────────────────────────
+
+/** DTO returned by GET /api/places and GET /api/places/{id} */
+export interface Place {
+  id: number;
+  name: string;
+  city: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  place_type?: string;
+  description?: string;
+  rating?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Query params accepted by GET /api/places */
+export interface PlaceQuery {
+  city?: string;
+  search?: string;
+}
+
+/** Body for POST /api/places */
+export interface CreatePlaceRequest {
+  name: string;
+  city: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  place_type?: string;
+  description?: string;
+  rating?: number;
 }
 
 // ─── Generic API response wrapper ───────────────────────────────────

@@ -1,13 +1,13 @@
 "use client";
 
-import type { Meetup } from "@/lib/types";
+import type { Meetup, UpComingMeetup } from "@/lib/types";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { CalendarIcon, ClockIcon, MapPin, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 interface MeetupCardProps {
-  meetup: Meetup;
+  meetup: UpComingMeetup;
 }
 
 export const MeetupCard: React.FC<MeetupCardProps> = ({ meetup }) => {
@@ -20,11 +20,10 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({ meetup }) => {
         <div className="flex justify-between items-start mb-4">
           <h3 className="font-bold text-2xl font-display">{meetup.title}</h3>
           <span
-            className={`px-3 py-1 text-sm font-bold rounded-full ${
-              meetup.status === "cancelled"
-                ? "bg-red-500 bg-opacity-20 text-red-300"
-                : "bg-green-500 bg-opacity-20 text-green-300"
-            }`}
+            className={`px-3 py-1 text-sm font-bold rounded-full ${meetup.status === "cancelled"
+              ? "bg-red-500 bg-opacity-20 text-red-300"
+              : "bg-green-500 bg-opacity-20 text-green-300"
+              }`}
           >
             {meetup.status === "cancelled" ? "Cancelled" : "Active"}
           </span>
@@ -53,13 +52,8 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({ meetup }) => {
           <div className="flex items-start text-left">
             <UsersIcon className="h-5 w-5 mr-3 text-purple-400 shrink-0 mt-1" />
             <div className="text-sm text-gray-400 leading-relaxed">
-              {meetup.participants.length > 0
-                ? meetup.participants.map((p, index) => (
-                    <span key={p.id ?? index}>
-                      {p.inAppName ?? p.name}
-                      {index < meetup.participants.length - 1 ? ", " : ""}
-                    </span>
-                  ))
+              {meetup.participantCount > 0
+                ? `${meetup.participantCount} / ${meetup.participantsLimit}`
                 : "No participants yet"}
             </div>
           </div>

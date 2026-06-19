@@ -1,9 +1,8 @@
-import { CreateMeetupStepThreeInput, CreateMeetupStepThreeSchema } from "@/lib/validations/meetup";
+import { CreateMeetupStepThreeInput, CreateMeetupStepThreeSchema, vibeOptions } from "@/lib/validations/meetup";
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { vibes } from "@/data/mockup_data";
 import { Button } from "../ui/button";
 
 type FieldErrors = Partial<Record<"vibe", string[]>>
@@ -43,14 +42,14 @@ export const MeetupStepThree: React.FC<StepThreeProps> = ({ defaultValues, loadi
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="vibe">Vibe</Label>
-                            <Select items={vibes} value={vibe} onValueChange={(val) => { if (val !== null) setVibe(val); }}>
+                            <Select value={vibe} onValueChange={(val) => { if (val !== null) setVibe(val); }}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select a vibe"  />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                     <SelectLabel>Vibes</SelectLabel>
-                                    {vibes.map((item) => (
+                                    {vibeOptions.map((item) => (
                                         <SelectItem key={item.value} value={item.value}>
                                         {item.label}
                                         </SelectItem>

@@ -55,7 +55,12 @@ export const AccountSetupStepOneSchema = z.object({
 
 export const AccountSetupStepTwoSchema = z.object({
   interests: z
-    .array(z.string().min(1))
+    .array(
+      z.object({
+        category: z.string().min(1),
+        interest: z.string().min(1),
+      })
+    )
     .min(1, "Select at least one interest"),
 });
 

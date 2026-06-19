@@ -16,6 +16,7 @@ import {
 } from "@/lib/validations/auth";
 import { useState } from "react";
 import { INTERESTS_OPTIONS } from "@/data/mockup_data";
+import { InterestItem } from "@/lib/types";
 
 type FieldErrors = Partial<Record<"interests", string[]>>;
 
@@ -34,7 +35,7 @@ export const AccountSetupStepTwo: React.FC<StepTwoProps> = ({
 }) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [showAll, setShowAll] = useState(false);
-  const [interests, setInterests] = useState<string[]>(
+  const [interests, setInterests] = useState<InterestItem[]>(
     defaultValues?.interests || [],
   );
 
@@ -42,10 +43,14 @@ export const AccountSetupStepTwo: React.FC<StepTwoProps> = ({
     ? INTERESTS_OPTIONS
     : INTERESTS_OPTIONS.slice(0, 5);
 
-  const toggle = (list: string[], item: string) => {
-    return list.includes(item)
-      ? list.filter((i) => i !== item)
-      : [...list, item];
+  const toggleInterest = (item: InterestItem) => {
+    setInterests((prev) => {
+      const exists = prev.find((i) => i.interest === item.interest);
+      if (exists) {
+        return prev.filter((i) => i.interest !== item.interest);
+      }
+      return [...prev, item];
+    });
   };
 
   const handleSubmit = (e: React.SubmitEvent<HTMLElement>) => {
@@ -84,18 +89,24 @@ export const AccountSetupStepTwo: React.FC<StepTwoProps> = ({
               </span>
             </p>
             <div className="flex flex-wrap gap-2">
-              {displayedInterests.map((item) => (
-                <Badge
-                  key={item}
-                  variant={interests.includes(item) ? "default" : "outline"}
-                  className="cursor-pointer select-none px-3 py-1 text-sm"
-                  onClick={() =>
-                    setInterests((prev) => toggle(prev, item))
-                  }
-                >
-                  {item}
-                </Badge>
-              ))}
+              {displayedInterests.map((item, index) => {
+
+                const isSelected = interests.some(i => i.interest === item.interest);
+                return (
+                
+                  <Badge
+                    key={index}
+                    variant={isSelected ? "default" : "outline"}
+                    className="cursor-pointer select-none px-3 py-1 text-sm"
+                    onClick={() =>
+                      toggleInterest(item)
+                    }
+                  >
+                    {item.interest}
+                  </Badge>
+                )
+              }
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               {INTERESTS_OPTIONS.length > 10 && (

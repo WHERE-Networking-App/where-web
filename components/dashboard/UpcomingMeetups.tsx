@@ -1,8 +1,8 @@
 import { MeetupCard } from "./MeetUpCard";
-import type { Meetup } from "@/lib/types";
+import type { UpComingMeetup } from "@/lib/types";
 
 interface UpcomingMeetupsProps {
-  meetups: Meetup[];
+  meetups: UpComingMeetup[];
 }
 
 export const UpcomingMeetups: React.FC<UpcomingMeetupsProps> = ({ meetups }) => {
@@ -16,7 +16,7 @@ export const UpcomingMeetups: React.FC<UpcomingMeetupsProps> = ({ meetups }) => 
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {meetups.map((meetup) => (
+          {meetups?.map((meetup) => (
             <MeetupCard key={meetup.id} meetup={meetup} />
           ))}
         </div>

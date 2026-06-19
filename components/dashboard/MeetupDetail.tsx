@@ -8,62 +8,115 @@ import {
   MapPinIcon,
   UserPlusIcon,
   UsersIcon,
+  XCircleIcon,
+  CheckCircleIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { apiClient } from "@/lib/api-client";
+import { joinMeetup, leaveMeetup, cancelMeetup, reachMeetup } from "@/lib/api/meetups";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MeetupReachSchema } from "@/lib/validations/meetup";
 
 interface MeetupDetailProps {
   meetup: Meetup;
+  /** The currently authenticated user's ID — used to determine host/participant roles */
+  currentUserId?: number;
 }
 
-export const MeetupDetail: React.FC<MeetupDetailProps> = ({ meetup }) => {
+export const MeetupDetail: React.FC<MeetupDetailProps> = ({
+  meetup,
+  currentUserId,
+}) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Reach note state
+  const [showReachNote, setShowReachNote] = useState(false);
+  const [reachNote, setReachNote] = useState("");
+  const [reachNoteError, setReachNoteError] = useState<string | null>(null);
+
+  const isHost = currentUserId != null && meetup.hostId === currentUserId;
+  const isParticipant =
+    currentUserId != null &&
+    meetup.participants.some((p) => p.userId === currentUserId);
+  const isCancelled = meetup.status === "cancelled" || meetup.cancelled;
+
+  // ─── Handlers ───────────────────────────────────────────────────────
+
   const handleJoin = async () => {
     setActionError(null);
     setLoading(true);
-
-    const { error } = await apiClient(`/api/meetups/${meetup.id}/join`, {
-      method: "POST",
-      authenticated: true,
-    });
-
+    const { error } = await joinMeetup(meetup.id);
     if (error) {
       setActionError(error);
-      setLoading(false);
-      return;
+    } else {
+      router.refresh();
     }
-
-    router.refresh();
     setLoading(false);
   };
 
   const handleLeave = async () => {
     setActionError(null);
     setLoading(true);
-
-    const { error } = await apiClient(`/api/meetups/${meetup.id}/leave`, {
-      method: "POST",
-      authenticated: true,
-    });
-
+    const { error } = await leaveMeetup(meetup.id);
     if (error) {
       setActionError(error);
-      setLoading(false);
-      return;
+    } else {
+      router.refresh();
     }
-
-    router.refresh();
     setLoading(false);
   };
 
+  const handleCancel = async () => {
+    if (!confirm("Are you sure you want to cancel this meetup?")) return;
+    setActionError(null);
+    setLoading(true);
+    const { error } = await cancelMeetup(meetup.id);
+    if (error) {
+      setActionError(error);
+    } else {
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleReach = async () => {
+    setReachNoteError(null);
+
+    // Validate optional note
+    const parsed = MeetupReachSchema.safeParse({ note: reachNote || undefined });
+    if (!parsed.success) {
+      setReachNoteError(
+        parsed.error.flatten().fieldErrors.note?.[0] ?? "Invalid note",
+      );
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await reachMeetup(meetup.id, parsed.data);
+    if (error) {
+      setActionError(error);
+    } else {
+      setShowReachNote(false);
+      setReachNote("");
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  // ─── Render ──────────────────────────────────────────────────────────
+
   return (
     <Card className="p-6">
-      <h1 className="text-4xl font-bold mb-4">{meetup.title}</h1>
+      <div className="flex items-start justify-between mb-4">
+        <h1 className="text-4xl font-bold">{meetup.title}</h1>
+        {isCancelled && (
+          <span className="px-3 py-1 text-sm font-bold rounded-full bg-red-500 bg-opacity-20 text-red-300">
+            Cancelled
+          </span>
+        )}
+      </div>
 
       {meetup.description && (
         <p className="text-gray-400 mb-4">{meetup.description}</p>
@@ -94,6 +147,7 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({ meetup }) => {
         </div>
       </div>
 
+      {/* Participants */}
       <div className="mb-8">
         <h2 className="font-display text-3xl mb-6">Participants</h2>
         <div className="space-y-4">
@@ -103,9 +157,16 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({ meetup }) => {
                 key={p.id ?? index}
                 className="flex items-center justify-between p-4 bg-purple-900 bg-opacity-30 rounded-lg"
               >
-                <span className="text-lg font-bold">
-                  {p.inAppName ?? p.name ?? `Participant ${index + 1}`}
-                </span>
+                <div>
+                  <span className="text-lg font-bold">
+                    {p.inAppName ?? p.name ?? `Participant ${index + 1}`}
+                  </span>
+                  {p.reached && (
+                    <span className="ml-3 text-xs px-2 py-0.5 bg-green-900/40 text-green-300 rounded-full">
+                      Reached
+                    </span>
+                  )}
+                </div>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -126,25 +187,115 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({ meetup }) => {
         </div>
       </div>
 
+      {/* Error display */}
       {actionError && (
         <div className="text-center p-4 bg-red-500 bg-opacity-20 text-red-300 rounded-lg mb-8">
           {actionError}
         </div>
       )}
 
-      <div className="flex justify-center space-x-6">
-        <Button size="lg" onClick={handleJoin} disabled={loading}>
-          {loading ? "Processing..." : "I'm going"}
-        </Button>
-        <Button
-          variant="danger"
-          size="lg"
-          onClick={handleLeave}
-          disabled={loading}
-        >
-          {loading ? "Processing..." : "I'm not going"}
-        </Button>
-      </div>
+      {/* Reach note input */}
+      {showReachNote && (
+        <div className="mb-6 space-y-2">
+          <label className="text-sm text-gray-400">
+            Optional arrival note
+          </label>
+          <input
+            type="text"
+            value={reachNote}
+            onChange={(e) => setReachNote(e.target.value)}
+            placeholder="e.g. I'll arrive around 4:10"
+            maxLength={500}
+            className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          {reachNoteError && (
+            <p className="text-red-400 text-xs">{reachNoteError}</p>
+          )}
+          <div className="flex gap-3">
+            <Button
+              size="sm"
+              onClick={handleReach}
+              disabled={loading}
+              className="flex-1"
+            >
+              {loading ? "Saving…" : "Confirm I'm Here"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowReachNote(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {!isCancelled && (
+        <div className="flex flex-wrap justify-center gap-4">
+          {/* Non-participant: show join */}
+          {!isParticipant && !isHost && (
+            <Button size="lg" onClick={handleJoin} disabled={loading}>
+              {loading ? "Processing…" : "I'm going"}
+            </Button>
+          )}
+
+          {/* Participant: show leave + mark as reached */}
+          {isParticipant && !isHost && (
+            <>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => setShowReachNote(true)}
+                disabled={loading || showReachNote}
+              >
+                <CheckCircleIcon className="h-5 w-5 mr-2" />
+                Mark as Reached
+              </Button>
+              <Button
+                variant="danger"
+                size="lg"
+                onClick={handleLeave}
+                disabled={loading}
+              >
+                {loading ? "Processing…" : "I'm not going"}
+              </Button>
+            </>
+          )}
+
+          {/* Host: show cancel */}
+          {isHost && (
+            <Button
+              variant="danger"
+              size="lg"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              <XCircleIcon className="h-5 w-5 mr-2" />
+              {loading ? "Cancelling…" : "Cancel Meetup"}
+            </Button>
+          )}
+
+          {/* Fallback for when currentUserId is not provided (unauthenticated view) */}
+          {currentUserId == null && (
+            <>
+              <Button size="lg" onClick={handleJoin} disabled={loading}>
+                {loading ? "Processing…" : "I'm going"}
+              </Button>
+              <Button
+                variant="danger"
+                size="lg"
+                onClick={handleLeave}
+                disabled={loading}
+              >
+                {loading ? "Processing…" : "I'm not going"}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </Card>
   );
 };

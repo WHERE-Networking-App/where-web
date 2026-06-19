@@ -47,18 +47,16 @@ export const AccountSetupFlow: React.FC = () => {
     setServerError(null);
     setLoading(true);
 
-    // Transform flat interests to {category, interest} format for the API
-    const interests: InterestItem[] = stepTwoData.interests.map((item) => ({
-      category: item,
-      interest: item,
-    }));
+    console.log(stepTwoData.interests);
 
     // Call step 2 API
     const { error } = await apiClient("/api/users/setup/step2", {
       method: "POST",
-      body: { interests },
+      body: stepTwoData,
       authenticated: true,
     });
+
+    console.log(error);
 
     if (error) {
       setServerError(error);
