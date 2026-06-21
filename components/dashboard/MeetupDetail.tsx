@@ -10,6 +10,7 @@ import {
   UsersIcon,
   XCircleIcon,
   CheckCircleIcon,
+  XIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { joinMeetup, leaveMeetup, cancelMeetup, reachMeetup } from "@/lib/api/meetups";
@@ -36,11 +37,24 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({
   const [reachNote, setReachNote] = useState("");
   const [reachNoteError, setReachNoteError] = useState<string | null>(null);
 
-  const isHost = currentUserId != null && meetup.hostId === currentUserId;
+  // Use API-provided flags when available, fall back to client-side derivation
+  const isHost =
+    meetup.isHost ??
+    (currentUserId != null && meetup.hostId === currentUserId);
   const isParticipant =
-    currentUserId != null &&
-    meetup.participants.some((p) => p.userId === currentUserId);
+    meetup.isParticipant ??
+    (currentUserId != null &&
+      (meetup.participants ?? []).some((p) => p.userId === currentUserId));
   const isCancelled = meetup.status === "cancelled" || meetup.cancelled;
+
+  // Determine if the current user has already marked themselves as reached.
+  // In the API response, participants[].id is the userId (not a join-table id).
+  const currentParticipant = (meetup.participants ?? []).find(
+    (p) => p.id === currentUserId,
+  );
+  const [hasReached, setHasReached] = useState<boolean>(
+    currentParticipant?.reached ?? false,
+  );
 
   // ─── Handlers ───────────────────────────────────────────────────────
 
@@ -98,8 +112,24 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({
     if (error) {
       setActionError(error);
     } else {
+      setHasReached(true);
       setShowReachNote(false);
       setReachNote("");
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleUnreach = async () => {
+    if (!confirm("Cancel your 'reached' status for this meetup?")) return;
+    setActionError(null);
+    setLoading(true);
+    // The reach endpoint toggles when called again
+    const { error } = await reachMeetup(meetup.id, {});
+    if (error) {
+      setActionError(error);
+    } else {
+      setHasReached(false);
       router.refresh();
     }
     setLoading(false);
@@ -141,7 +171,7 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({
         <div className="flex items-center text-lg">
           <UsersIcon className="h-6 w-6 mr-4 text-purple-400" />
           <span>
-            {meetup.participants.length} / {meetup.participantsLimit}{" "}
+            {meetup.participantCount ?? (meetup.participants ?? []).length} / {meetup.participantsLimit}{" "}
             participants
           </span>
         </div>
@@ -151,8 +181,8 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({
       <div className="mb-8">
         <h2 className="font-display text-3xl mb-6">Participants</h2>
         <div className="space-y-4">
-          {meetup.participants.length > 0 ? (
-            meetup.participants.map((p, index) => (
+          {(meetup.participants ?? []).length > 0 ? (
+            (meetup.participants ?? []).map((p, index) => (
               <div
                 key={p.id ?? index}
                 className="flex items-center justify-between p-4 bg-purple-900 bg-opacity-30 rounded-lg"
@@ -242,18 +272,33 @@ export const MeetupDetail: React.FC<MeetupDetailProps> = ({
             </Button>
           )}
 
-          {/* Participant: show leave + mark as reached */}
+          {/* Participant: show leave + mark as reached (toggleable) */}
           {isParticipant && !isHost && (
             <>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => setShowReachNote(true)}
-                disabled={loading || showReachNote}
-              >
-                <CheckCircleIcon className="h-5 w-5 mr-2" />
-                Mark as Reached
-              </Button>
+              {hasReached ? (
+                // Already reached — show cancel button
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleUnreach}
+                  disabled={loading}
+                  className="border-amber-500 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                >
+                  <XIcon className="h-5 w-5 mr-2" />
+                  {loading ? "Processing…" : "Cancel Mark as Reached"}
+                </Button>
+              ) : (
+                // Not yet reached — show mark button
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setShowReachNote(true)}
+                  disabled={loading || showReachNote}
+                >
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  Mark as Reached
+                </Button>
+              )}
               <Button
                 variant="danger"
                 size="lg"

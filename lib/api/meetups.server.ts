@@ -21,8 +21,11 @@ export async function getUpcomingMeetups() {
 
 /**
  * GET /api/meetups/{id}
- * Returns full meetup details including participants.
+ * The API wraps the meetup in { meetup: {...} }.
+ * This function unwraps it so callers get ApiResponse<Meetup> directly.
  */
 export async function getMeetupById(id: number | string) {
-  return apiServer<Meetup>(`/api/meetups/${id}`);
+  const res = await apiServer<{ meetup: Meetup }>(`/api/meetups/${id}`);
+  if (res.error || !res.data) return { data: null, error: res.error };
+  return { data: res.data.meetup, error: null };
 }

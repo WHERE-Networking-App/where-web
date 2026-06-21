@@ -75,21 +75,23 @@ export interface MeetupParticipant {
   id?: number;
   userId?: number;
   inAppName?: string;
+  username?: string;
   name?: string;
   status?: string;
   reached?: boolean;
   reachedAt?: string;
+  reachedNote?: string | null;
   note?: string;
 }
 
 export interface Meetup {
   id: number;
   title: string;
-  description?: string;
+  description?: string | null;
   date: string;
   timeSlot: string;
   city: string;
-  location?: string;
+  location?: string | null;
   vibe: string;
   participantsLimit: number;
   status?: string;
@@ -97,10 +99,20 @@ export interface Meetup {
   hostId?: number;
   host?: {
     id: number;
-    username: string;
-    inAppName: string;
+    username: string | null;
+    inAppName: string | null;
   };
-  participants: MeetupParticipant[];
+  participants?: MeetupParticipant[];
+  /** Total participant count (pre-computed by API) */
+  participantCount?: number;
+  /** Whether the current user is a participant (pre-computed by API) */
+  isParticipant?: boolean;
+  /** Whether the current user is the host (pre-computed by API) */
+  isHost?: boolean;
+  /** Whether the meetup is full (pre-computed by API) */
+  isFull?: boolean;
+  /** Whether the meetup date has passed (pre-computed by API) */
+  hasPassed?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
