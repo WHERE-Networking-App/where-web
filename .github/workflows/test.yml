@@ -1,0 +1,26 @@
+name: Test Org Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux, aks]
+
+    steps:
+      - name: Test runner
+        run: |
+          echo "Running on organization self-hosted runner"
+          echo "Hostname: $(hostname)"
+          echo "User: $(whoami)"
+
+      - name: Test Docker
+        run: |
+          docker version
+
+      - name: Test Azure CLI
+        run: |
+          az version
+
+      - name: Success
+        run: echo "🎉 Organization runner works!"
